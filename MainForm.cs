@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 namespace ApplicationLogger {
@@ -13,7 +12,12 @@ namespace ApplicationLogger {
 
 		// Constants
 		private const string SETTINGS_FIELD_PATH_TEMPLATE = "PathTemplate";
+		private const long IDLE_TIME = 10L * 60L * 1000L;							// Time to be considered idle, in ms; 10 minutes
 		private const int TIME_CHECK_INTERVAL = 500;								// Time interval to check processes, in ms
+		private const string LINE_DIVIDER = "\t";
+		private const string LINE_END = "\r\n";
+		private const string DATE_TIME_FORMAT = "o";								// 2008-06-15T21:15:07.0000000
+		private const int MAX_LINES_TO_QUEUE = 20;									// Max lines to queue before writing to file
 
 		// Properties
 		private Timer timerCheck;
@@ -23,9 +27,13 @@ namespace ApplicationLogger {
 		private MenuItem menuItemExit;
 		private bool isClosing;
 		private bool isStarted;
+		private bool isUserIdle;
 		private string lastUserProcessId;
-		private List<string> queuedMessages;
+		private List<string> queuedLogMessages;
 
+		private string newUserProcessId;											// Temp
+		private DateTime now;														// Temp, used for getting the time
+		private StringBuilder lineToLog;											// Temp, used to create the line
 
 		// ================================================================================================================
 		// CONSTRUCTOR ----------------------------------------------------------------------------------------------------
@@ -44,7 +52,8 @@ namespace ApplicationLogger {
 			// Initialize
 			isClosing = false;
 			isStarted = false;
-			queuedMessages = new List<string>();
+			queuedLogMessages = new List<string>();
+			lineToLog = new StringBuilder();
 
 			// Create context menu for the tray icon
 			createContextMenu();
@@ -75,51 +84,36 @@ namespace ApplicationLogger {
 
 		private void onTimer(object sender, EventArgs e) {
 			// Timer tick: check for the current application
-			var process = getCurrentUserProcess();
 
-			bool isUserIdle = Win32.GetIdleTime() > 15l * 60l * 1000l; // 15 min
-			bool isProcessValid = true;
-
-			// Create a unique id
-			string newUserProcessId;
-			if (isUserIdle) {
-				// User idle
-				newUserProcessId = "User idle";
-				isProcessValid = false;
-				updateText("User Idle");
-			} else if (process == null) {
-				// Unknown process
-				//newUserProcessId = "?";
-				isProcessValid = false;
-
-				return;
-			} else {
-				// Normal process
-				newUserProcessId = process.ProcessName + "_" + process.MainWindowTitle;
-			}
-
-			if (lastUserProcessId != newUserProcessId) {
-				// New process, do everything
-
-				// Update dialog
-				updateText(process);
-
-				// Update textfile
-				var now = DateTime.Now;
-				string fileName = getSavedPathTemplate().Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
-				string lineToWrite = "";
-				lineToWrite += now.ToString();
-				lineToWrite += "\t";
-				lineToWrite += isProcessValid ? (process.MainModule.FileName + "\t" + process.ProcessName + "\t" + process.MainWindowTitle) : newUserProcessId;
-				lineToWrite += "\r\n";
-				try {
-					System.IO.File.AppendAllText(fileName, lineToWrite);
-				} catch (Exception exception) {
+			// Check the user is idle
+			if (Win32.GetIdleTime() >= IDLE_TIME) {
+				if (!isUserIdle) {
+					// User is now idle
+					isUserIdle = true;
+					lastUserProcessId = null;
+					logUserIdle();
 				}
-
-				lastUserProcessId = newUserProcessId;
+			} else {
+				if (isUserIdle) {
+					// User is not idle anymore
+					isUserIdle = false;
+				}
 			}
 
+			// Check the user process
+			if (!isUserIdle) {
+				var process = getCurrentUserProcess();
+				if (process != null) {
+					// Valid process, create a unique id
+					newUserProcessId = process.ProcessName + "_" + process.MainWindowTitle;
+
+					if (lastUserProcessId != newUserProcessId) {
+						// New process
+						logUserProcess(process);
+						lastUserProcessId = newUserProcessId;
+					}
+				}
+			}
 		}
 
 		private void onResize(object sender, EventArgs e) {
@@ -207,6 +201,7 @@ namespace ApplicationLogger {
 				timerCheck.Interval = TIME_CHECK_INTERVAL;
 				timerCheck.Start();
 
+				lastUserProcessId = null;
 				isStarted = true;
 
 				updateContextMenu();
@@ -215,6 +210,8 @@ namespace ApplicationLogger {
 
 		private void stop() {
 			if (isStarted) {
+				logStop();
+
 				timerCheck.Stop();
 				timerCheck.Dispose();
 				timerCheck = null;
@@ -225,13 +222,72 @@ namespace ApplicationLogger {
 			}
 		}
 
-		private void updateText(Process process) {
-			// Update dialog text with the current application's data
+		private void logUserIdle() {
+			// Log that the user is idle
+			logLine("status::idle");
+			updateText("User idle");
 
-			if (process != null) {
-				updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
-			} else {
-				updateText("?");
+			commitLines();
+		}
+
+		private void logUserProcess(Process process) {
+			// Log the current user process
+			logLine("app::focus", process.ProcessName, process.MainModule.FileName, process.MainWindowTitle);
+			updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
+		}
+
+		private void logStop() {
+			// Log stopping the application
+			logLine("status::stop");
+			updateText("Stopped");
+
+			commitLines();
+		}
+
+		private void logLine(string type, string title = "", string location = "", string subject = "") {
+			// Log a single line
+			now = DateTime.Now;
+			
+			lineToLog.Clear();
+			lineToLog.Append(now.ToString(DATE_TIME_FORMAT));
+			lineToLog.Append(LINE_DIVIDER);
+			lineToLog.Append(type);
+			lineToLog.Append(LINE_DIVIDER);
+			lineToLog.Append(title);
+			lineToLog.Append(LINE_DIVIDER);
+			lineToLog.Append(location);
+			lineToLog.Append(LINE_DIVIDER);
+			lineToLog.Append(subject);
+			lineToLog.Append(LINE_END);
+
+			queuedLogMessages.Add(lineToLog.ToString());
+
+			//Console.Write("LOG ==> " + lineToLog.ToString());
+
+			if (queuedLogMessages.Count > MAX_LINES_TO_QUEUE) commitLines();
+		}
+
+		private void commitLines() {
+			// Commit all currently queued lines to the file
+
+			lineToLog.Clear();
+			foreach (var line in queuedLogMessages) {
+				lineToLog.Append(line);
+			}
+
+			now = DateTime.Now;
+			string fileName = getSavedPathTemplate().Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
+			bool saved = false;
+
+			try {
+				System.IO.File.AppendAllText(fileName, lineToLog.ToString());
+				saved = true;
+			} catch (Exception exception) {
+			}
+
+			if (saved) {
+				// Saved successfully, now clear the queue
+				queuedLogMessages.Clear();
 			}
 		}
 
