@@ -123,7 +123,7 @@ namespace ApplicationLogger {
 
 			if (FormWindowState.Minimized == this.WindowState) {
 				//notifyIcon.ShowBalloonTip(500);
-				this.Hide();    
+				this.Hide();
 			}
 		}
 
@@ -307,15 +307,13 @@ namespace ApplicationLogger {
 
 		private Process getCurrentUserProcess() {
 			// Find the process that's currently on top
-			var procs = new List<Process>();
-
-            var processListSnapshot = Process.GetProcesses();
+			var processes = Process.GetProcesses();
 			var foregroundWindowHandle = Win32.GetForegroundWindow();
 
-            foreach (var process in processListSnapshot) {
-                if (process.Id <= 4) { continue; } // system processes
+			foreach (var process in processes) {
+				if (process.Id <= 4) { continue; } // system processes
 				if (process.MainWindowHandle == foregroundWindowHandle) return process;
-            }
+			}
 
 			// Nothing found!
 			return null;
@@ -376,6 +374,5 @@ namespace ApplicationLogger {
 				return lastInPut.dwTime;
 			}
 		}
-
 	}
 }
