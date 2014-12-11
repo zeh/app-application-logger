@@ -68,6 +68,7 @@ namespace ApplicationLogger {
 				Hide();
 			} else {
 				// Actually closing
+				stop();
 			}
 		}
 
@@ -238,7 +239,6 @@ namespace ApplicationLogger {
 		}
 
 		private void exit() {
-			stop();
 			isClosing = true;
 			Close();
 		}
