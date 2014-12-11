@@ -137,7 +137,11 @@ namespace ApplicationLogger {
 		}
 
 		private void onMenuItemStartStopClicked(object Sender, EventArgs e) {
-			exit();
+			if (isStarted) {
+				stop();
+			} else {
+				start();
+			}
 		}
 
 		private void onMenuItemExitClicked(object Sender, EventArgs e) {
