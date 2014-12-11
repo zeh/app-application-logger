@@ -14,4 +14,9 @@ Run Application Logger. Write the name of the file you want it to save to in the
 
 It assumes the user is away if no input is performed after 15 minutes.
 
+Other info
+----------
+
 The project is a Visual Studio 2013 project. It's a single form project, so it should be fairly simple to change, customize and recompile.
+
+This project is licensed under the [WTFPL](http://en.wikipedia.org/wiki/WTFPL) license.
