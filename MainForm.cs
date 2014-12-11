@@ -248,9 +248,11 @@ namespace ApplicationLogger {
 			var procs = new List<Process>();
 
             var processListSnapshot = Process.GetProcesses();
+			var foregroundWindowHandle = Win32.GetForegroundWindow();
+
             foreach (var process in processListSnapshot) {
                 if (process.Id <= 4) { continue; } // system processes
-				if (process.MainWindowHandle == Win32.GetForegroundWindow()) return process;
+				if (process.MainWindowHandle == foregroundWindowHandle) return process;
             }
 
 			// Nothing found!
