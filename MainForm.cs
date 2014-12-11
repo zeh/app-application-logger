@@ -13,6 +13,7 @@ namespace ApplicationLogger {
 
 		// Constants
 		private const string SETTINGS_FIELD_PATH_TEMPLATE = "PathTemplate";
+		private const int TIME_CHECK_INTERVAL = 500;								// Time interval to check processes, in ms
 
 		// Properties
 		private Timer timerCheck;
@@ -203,7 +204,7 @@ namespace ApplicationLogger {
 				// Initialize timer
 				timerCheck = new Timer();
 				timerCheck.Tick += new EventHandler(onTimer);
-				timerCheck.Interval = 500; // in miliseconds
+				timerCheck.Interval = TIME_CHECK_INTERVAL;
 				timerCheck.Start();
 
 				isStarted = true;
