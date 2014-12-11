@@ -232,8 +232,13 @@ namespace ApplicationLogger {
 
 		private void logUserProcess(Process process) {
 			// Log the current user process
-			logLine("app::focus", process.ProcessName, process.MainModule.FileName, process.MainWindowTitle);
-			updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
+			try {
+				logLine("app::focus", process.ProcessName, process.MainModule.FileName, process.MainWindowTitle);
+				updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
+			} catch (Exception exception) {
+				logLine("app::focus", process.ProcessName, "?", "?");
+				updateText("Name: ?");
+			}
 		}
 
 		private void logStop() {
