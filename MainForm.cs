@@ -231,7 +231,7 @@ namespace ApplicationLogger {
 				// Write file
 				System.IO.File.WriteAllText(CONFIG_FILE, configFileDataDefault);
 
-				configFileDataDefault = configFileData;
+				configFileData = configFileDataDefault;
 			} else {
 				// Read the existing config
 				configFileData = System.IO.File.ReadAllText(CONFIG_FILE);
