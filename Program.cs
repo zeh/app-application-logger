@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace ApplicationLogger {
@@ -14,16 +14,13 @@ namespace ApplicationLogger {
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			// Check if it's already running
-			bool created = false;
-			using (Mutex mutex = new Mutex(true, "ApplicationLoggerMutex", out created)) {
-				if (!created) {
-					// Already running
-					Console.WriteLine("Application already running, will exit");
-					Application.Exit();
-				}
+			if (Process.GetProcessesByName("ApplicationLogger").Length > 1 && !System.Diagnostics.Debugger.IsAttached) {
+				// Already running!
+				Console.WriteLine("Application already running, will exit");
+				Application.Exit();
+			} else {
+				Application.Run(new MainForm());
 			}
-
-			Application.Run(new MainForm());
 		}
 	}
 }
