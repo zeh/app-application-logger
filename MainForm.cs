@@ -285,6 +285,8 @@ namespace ApplicationLogger {
 			lineToLog.Append(LINE_DIVIDER);
 			lineToLog.Append(type);
 			lineToLog.Append(LINE_DIVIDER);
+			lineToLog.Append(Environment.MachineName);
+			lineToLog.Append(LINE_DIVIDER);
 			lineToLog.Append(title);
 			lineToLog.Append(LINE_DIVIDER);
 			lineToLog.Append(location);
