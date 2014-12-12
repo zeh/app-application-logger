@@ -63,8 +63,8 @@ namespace ApplicationLogger {
 			notifyIcon.ContextMenu = contextMenu;
 
 			// Initialize UI
-			if (getSavedPathTemplate() == null || getSavedPathTemplate() == "") setSavedPathTemplate("logs/[[year]]_[[month]].log");
-			textPathTemplate.Text = getSavedPathTemplate();
+			if (settingsPathTemplate == null || settingsPathTemplate == "") settingsPathTemplate = "logs/[[year]]_[[month]].log";
+			textPathTemplate.Text = settingsPathTemplate;
 
 			// Finally, start
 			start();
@@ -151,7 +151,7 @@ namespace ApplicationLogger {
 
 		private void onClickSave(object sender, EventArgs e) {
 			// Save options
-			setSavedPathTemplate(textPathTemplate.Text);
+			settingsPathTemplate = textPathTemplate.Text;
 		}
 
 
@@ -281,7 +281,7 @@ namespace ApplicationLogger {
 			}
 
 			now = DateTime.Now;
-			string fileName = getSavedPathTemplate().Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
+			string fileName = settingsPathTemplate.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
 			bool saved = false;
 
 			try {
@@ -309,15 +309,19 @@ namespace ApplicationLogger {
 		// ================================================================================================================
 		// ACCESSOR INTERFACE ---------------------------------------------------------------------------------------------
 
+		private string settingsPathTemplate {
+			// The template for where log files should be saved
+			get {
+				return (string)Settings.Default[SETTINGS_FIELD_PATH_TEMPLATE];
+			}
+			set {
+				Settings.Default[SETTINGS_FIELD_PATH_TEMPLATE] = value;
+				Settings.Default.Save();
+			}
 		}
 
-		private string getSavedPathTemplate() {
-			return Settings.Default[SETTINGS_FIELD_PATH_TEMPLATE] as string;
 		}
 
-		private void setSavedPathTemplate(string pathTemplate) {
-			Settings.Default[SETTINGS_FIELD_PATH_TEMPLATE] = pathTemplate;
-			Settings.Default.Save();
 		}
 
 		}
