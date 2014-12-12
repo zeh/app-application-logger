@@ -1,18 +1,50 @@
-app-application-logger
-======================
+Application Logger
+==================
 
-A small standalone Windows application to log the applications one is using.
+Application Logger is a small standalone Windows application that logs the applications the current user is running at any time, adding them to a log file every time the user changes focus.
 
-I created this because I wanted to have a log of all the applications I've been using, and what file they had open.
+I created this because I wanted to have a log of all the applications I've been using, and what file they had open, for statistical purposes. While there are some applications and online services that already do this for you (e.g. RescueTime), no other service had the level of flexibility and raw access to data I wanted so I decided to write this myself.
 
-The result is a raw, tab-separated log file. This can be used for usage statistics; in my case, I wanted to know which programming platforms I've been working on over time, to generate better statistics for my own language usage charts.
+The result is an application that writes data to a raw, tab-separated log file.
 
 Usage
 -----
 
-Run Application Logger. Write the name of the file you want it to save to in the field provided. Let it run in the background; it will poll the system every 500ms for the current running application, and write it to the log file if it's different.
+Cipy ApplicationLogger.exe somewhere, and then run it. It will add itself to the system tray, and start logging the applications you run.
 
-It assumes the user is away if no input is performed after 15 minutes.
+By default, it will also run at Windows startup. You can disable this behavior by right-clicking on its tray icon and deselecting that option.
+
+After it is ran for the first time, it will also write a config file to its folder. This file has several options that dictate how the application runs; open the file for more information.
+
+By default, it polls the active application every 0.5 seconds, and assumes the user to be away if no user input has been performed for 10 minutes.
+
+
+Log format
+----------
+
+The log file contains these fields, separated by a tab:
+
+ * Time where an event was recorded
+ * Event type
+   * `app::focus`: an application gained focus.
+   * `status::idle`: the user is now idle. Time is the time of the last known interaction.
+   * `status::stop`: logging has stopped, either because the application has quit, the user has stopped logging, or because the day has ended.
+ * Machine name
+ * Process name
+ * Full process path
+ * Main process window title
+
+These are some examples of log lines:
+
+	2014-12-11T12:55:12.3908117-05:00	app::focus	NYC03ZEHF	TweetDeck	C:\Program Files (x86)\Twitter\TweetDeck\TweetDeck.exe	TweetDeck
+	2014-12-11T13:00:39.6875381-05:00	app::focus	NYC03ZEHF	chrome	C:\Program Files (x86)\Google\Chrome\Application\chrome.exe	Showtime Anytime app comes to Xbox One | Polygon - Google Chrome
+	2014-12-11T13:29:55.1320650-05:00	app::focus	NYC03ZEHF	firefox	C:\Program Files (x86)\Mozilla Firefox\firefox.exe	C# snippets - Google Docs - Mozilla Firefox
+	2014-12-11T13:33:14.0059504-05:00	app::focus	NYC03ZEHF	notepad++	C:\Program Files (x86)\Notepad++\notepad++.exe	D:\dropbox\apps\logger\ApplicationLogger.cfg - Notepad++ [Administrator]
+	2014-12-11T13:37:15.4130887-05:00	app::focus	NYC03ZEHF	explorer	C:\Windows\explorer.exe	src
+	2014-12-11T11:37:23.3319560-05:00	app::focus	NYC03ZEHF	WDExpress	C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\WDExpress.exe	ApplicationLogger - Microsoft Visual Studio Express 2013 for Windows Desktop (Administrator)
+	2014-12-11T13:44:53.9509379-05:00	app::focus	NYC03ZEHF	studio64	C:\Users\zeh.fernando\AppData\Local\Android\android-studio-0.8.14\bin\studio64.exe	android - [D:\trampos\2011\QWERTY_APPS2852\dev\android-app] - [app] - ...\app\src\main\java\com\querty\obfuscated\ApplicationConstants.java - Android Studio 1.0
+	2014-12-11T12:24:14.1160028-05:00	status::idle			
+	2014-12-11T13:49:01.4716875-05:00	status::stop			
 
 Other info
 ----------
