@@ -10,7 +10,7 @@ The result is an application that writes data to a raw, tab-separated log file.
 Usage
 -----
 
-Cipy ApplicationLogger.exe somewhere, and then run it. It will add itself to the system tray, and start logging the applications you run.
+Download [ApplicationLogger.exe](https://github.com/zeh/app-application-logger/tree/master/deploy). Copy it somewhere, and then run it. It will add itself to the system tray, and start logging the applications you run.
 
 By default, it will also run at Windows startup. You can disable this behavior by right-clicking on its tray icon and deselecting that option.
 
@@ -32,7 +32,7 @@ The log file contains these fields, separated by a tab:
  * Machine name
  * Process name
  * Full process path
- * Main process window title
+ * Main process window title (if possible)
 
 These are some examples of log lines:
 
