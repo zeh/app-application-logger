@@ -36,13 +36,13 @@ The log file contains these fields, separated by a tab:
 
 These are some examples of log lines:
 
-	2014-12-11T12:55:12.3908117-05:00	app::focus	NYC03ZEHF	TweetDeck	C:\Program Files (x86)\Twitter\TweetDeck\TweetDeck.exe	TweetDeck
-	2014-12-11T13:00:39.6875381-05:00	app::focus	NYC03ZEHF	chrome	C:\Program Files (x86)\Google\Chrome\Application\chrome.exe	Showtime Anytime app comes to Xbox One | Polygon - Google Chrome
-	2014-12-11T13:29:55.1320650-05:00	app::focus	NYC03ZEHF	firefox	C:\Program Files (x86)\Mozilla Firefox\firefox.exe	C# snippets - Google Docs - Mozilla Firefox
-	2014-12-11T13:33:14.0059504-05:00	app::focus	NYC03ZEHF	notepad++	C:\Program Files (x86)\Notepad++\notepad++.exe	D:\dropbox\apps\logger\ApplicationLogger.cfg - Notepad++ [Administrator]
-	2014-12-11T13:37:15.4130887-05:00	app::focus	NYC03ZEHF	explorer	C:\Windows\explorer.exe	src
-	2014-12-11T11:37:23.3319560-05:00	app::focus	NYC03ZEHF	WDExpress	C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\WDExpress.exe	ApplicationLogger - Microsoft Visual Studio Express 2013 for Windows Desktop (Administrator)
-	2014-12-11T13:44:53.9509379-05:00	app::focus	NYC03ZEHF	studio64	C:\Users\zeh.fernando\AppData\Local\Android\android-studio-0.8.14\bin\studio64.exe	android - [D:\trampos\2011\QWERTY_APPS2852\dev\android-app] - [app] - ...\app\src\main\java\com\querty\obfuscated\ApplicationConstants.java - Android Studio 1.0
+	2014-12-11T12:55:12.3908117-05:00	app::focus	ZMACHINE	TweetDeck	C:\Program Files (x86)\Twitter\TweetDeck\TweetDeck.exe	TweetDeck
+	2014-12-11T13:00:39.6875381-05:00	app::focus	ZMACHINE	chrome	C:\Program Files (x86)\Google\Chrome\Application\chrome.exe	Showtime Anytime app comes to Xbox One | Polygon - Google Chrome
+	2014-12-11T13:29:55.1320650-05:00	app::focus	ZMACHINE	firefox	C:\Program Files (x86)\Mozilla Firefox\firefox.exe	C# snippets - Google Docs - Mozilla Firefox
+	2014-12-11T13:33:14.0059504-05:00	app::focus	ZMACHINE	notepad++	C:\Program Files (x86)\Notepad++\notepad++.exe	D:\apps\logger\ApplicationLogger.cfg - Notepad++ [Administrator]
+	2014-12-11T13:37:15.4130887-05:00	app::focus	ZMACHINE	explorer	C:\Windows\explorer.exe	src
+	2014-12-11T11:37:23.3319560-05:00	app::focus	ZMACHINE	WDExpress	C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\WDExpress.exe	ApplicationLogger - Microsoft Visual Studio Express 2013 for Windows Desktop (Administrator)
+	2014-12-11T13:44:53.9509379-05:00	app::focus	ZMACHINE	studio64	C:\Users\zeh.fernando\AppData\Local\Android\android-studio-0.8.14\bin\studio64.exe	android - [D:\work\QWERTY_APPS2852\dev\android-app] - [app] - ...\app\src\main\java\com\querty\obfuscated\ApplicationConstants.java - Android Studio 1.0
 	2014-12-11T12:24:14.1160028-05:00	status::idle			
 	2014-12-11T13:49:01.4716875-05:00	status::stop			
 
