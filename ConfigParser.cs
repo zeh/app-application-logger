@@ -22,7 +22,7 @@ class ConfigParser {
 			// Skip comments
 			if (line.Trim()[0] == '#') continue;
 
-			// Parse field
+			// Parse field, allows "=" in the field value but not in the field name
 			equalPosition = line.IndexOf("=");
 			if (equalPosition > 0) {
 				values.Add(line.Substring(0, equalPosition).Trim(), line.Substring(equalPosition + 1).Trim());
@@ -32,7 +32,6 @@ class ConfigParser {
 
 	// Public interface
 	public string getString(string fieldName) {
-		// Gets a value from a dictionary
 		return values.ContainsKey(fieldName) ? values[fieldName] : null;
 	}
 

@@ -76,6 +76,8 @@ namespace ApplicationLogger {
 
 			// Finally, start
 			start();
+
+			Hide();
 		}
 
 		private void onFormClosing(object sender, FormClosingEventArgs e) {
@@ -134,7 +136,7 @@ namespace ApplicationLogger {
 			//notifyIcon.BalloonTipTitle = "Minimize to Tray App";
 			//notifyIcon.BalloonTipText = "You have successfully minimized your form.";
 
-			if (FormWindowState.Minimized == this.WindowState) {
+			if (WindowState == FormWindowState.Minimized) {
 				//notifyIcon.ShowBalloonTip(500);
 				this.Hide();
 			}
@@ -218,7 +220,7 @@ namespace ApplicationLogger {
 		}
 
 		private void readConfiguration() {
-			// Read the current configuration
+			// Read the current configuration file
 
 			// Read default file
 			ConfigParser configDefault = new ConfigParser(ApplicationLogger.Properties.Resources.default_config);
