@@ -14,6 +14,7 @@ namespace ApplicationLogger {
 		private const string SETTINGS_FIELD_PATH_TEMPLATE = "PathTemplate";
 		private const string SETTINGS_FIELD_RUN_AT_STARTUP = "RunAtStartup";
 		private const string REGISTRY_KEY_ID = "ApplicationLogger";					// Registry app key for when it's running at startup
+		private const string CONFIG_FILE = "ApplicationLogger.cfg";
 
 		private const long IDLE_TIME = 10L * 60L * 1000L;							// Time to be considered idle, in ms; 10 minutes
 		private const int TIME_CHECK_INTERVAL = 500;								// Time interval to check processes, in ms
@@ -58,6 +59,9 @@ namespace ApplicationLogger {
 			isStarted = false;
 			queuedLogMessages = new List<string>();
 			lineToLog = new StringBuilder();
+
+			// Read configuration
+			readConfiguration();
 
 			// Create context menu for the tray icon
 			createContextMenu();
@@ -218,6 +222,29 @@ namespace ApplicationLogger {
 					menuItemStartStop.Text = "&Start";
 				}
 			}
+		}
+
+		private void readConfiguration() {
+			// Read the current configuration
+
+			// Read default file
+			var configFileDataDefault = ApplicationLogger.Properties.Resources.default_config;
+			var configFileData = "";
+
+			if (!System.IO.File.Exists(CONFIG_FILE)) {
+				// Config file not found, create it first
+				Console.Write("Config file does not exist, creating");
+
+				// Write file
+				System.IO.File.WriteAllText(CONFIG_FILE, configFileDataDefault);
+
+				configFileDataDefault = configFileData;
+			} else {
+				// Read the existing config
+				configFileData = System.IO.File.ReadAllText(CONFIG_FILE);
+			}
+
+			// Interprets config data
 		}
 
 		private void start() {

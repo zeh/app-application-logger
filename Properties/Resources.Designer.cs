@@ -61,6 +61,29 @@ namespace ApplicationLogger.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to # Template for the file path in which logs will be saved.
+        ///#
+        ///# * This is either relative to the executable path, or an absolute path.
+        ///#
+        ///# * If the file or path doesn&apos;t exist, it will be created.
+        ///#
+        ///# * Some variables are accepted, and replace the file where convenient:
+        ///#
+        ///#   [[year]] : current year e.g: 2014
+        ///#   [[month]] : current month of the year (starting at 1), e.g: 03, 12
+        ///#   [[day]] : current day of the month (starting at 1), e.g: 01, 28
+        ///#
+        ///# Examples:
+        ///#   path=appLog.log
+        ///#   path=logs/[[y [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string default_config {
+            get {
+                return ResourceManager.GetString("default_config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon trayIcon {
