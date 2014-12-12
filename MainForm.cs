@@ -221,64 +221,28 @@ namespace ApplicationLogger {
 			// Read the current configuration
 
 			// Read default file
-			var configFileDataDefault = ApplicationLogger.Properties.Resources.default_config;
-			var configFileData = "";
+			ConfigParser configDefault = new ConfigParser(ApplicationLogger.Properties.Resources.default_config);
+			ConfigParser configUser;
 
 			if (!System.IO.File.Exists(CONFIG_FILE)) {
 				// Config file not found, create it first
 				Console.Write("Config file does not exist, creating");
 
-				// Write file
-				System.IO.File.WriteAllText(CONFIG_FILE, configFileDataDefault);
+				// Write file so it can be edited by the user
+				System.IO.File.WriteAllText(CONFIG_FILE, ApplicationLogger.Properties.Resources.default_config);
 
-				configFileData = configFileDataDefault;
+				// User config is the same as the default
+				configUser = configDefault;
 			} else {
-				// Read the existing config
-				configFileData = System.IO.File.ReadAllText(CONFIG_FILE);
+				// Read the existing user config
+				configUser = new ConfigParser(System.IO.File.ReadAllText(CONFIG_FILE));
 			}
-
-			var configValuesDefault = getConfigValues(configFileDataDefault);
-			var configValues = getConfigValues(configFileData);
 
 			// Interprets config data
-			configPath = getConfigValueAsString(configValues, "path") ?? getConfigValueAsString(configValuesDefault, "path");
-			configIdleTime = getConfigValueAsFloat(configValues, "idleTime") ?? getConfigValueAsFloat(configValuesDefault, "idleTime");
-			configTimeCheckInterval = getConfigValueAsFloat(configValues, "checkInterval") ?? getConfigValueAsFloat(configValuesDefault, "checkInterval");
-			configMaxLinesToQueue = getConfigValueAsInt(configValues, "maxQueueEntries") ?? getConfigValueAsInt(configValuesDefault, "maxQueueEntries");
-		}
-
-		private Dictionary<String, String> getConfigValues(string fileData) {
-			// Reads a config file into a dictionary
-
-			string[] lines = fileData.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-			int equalPosition;
-			var allValues = new Dictionary<String, String>();
-
-			foreach (var line in lines) {
-				// Skip comments
-				if (line.Trim()[0] == '#') continue;
-
-				// Parse field
-				equalPosition = line.IndexOf("=");
-				if (equalPosition > 0) {
-					allValues.Add(line.Substring(0, equalPosition).Trim(), line.Substring(equalPosition + 1).Trim());
-				}
-			}
-
-			return allValues;
-		}
-
-		private string getConfigValueAsString(Dictionary<String, String> values, string fieldName) {
-			// Gets a value from a dictionary
-			return values.ContainsKey(fieldName) ? values[fieldName] : null;
-		}
-
-		private float? getConfigValueAsFloat(Dictionary<String, String> values, string fieldName) {
-			return float.Parse(getConfigValueAsString(values, fieldName), CultureInfo.InvariantCulture);
-		}
-
-		private int? getConfigValueAsInt(Dictionary<String, String> values, string fieldName) {
-			return int.Parse(getConfigValueAsString(values, fieldName), CultureInfo.InvariantCulture);
+			configPath = configUser.getString("path") ?? configDefault.getString("path");
+			configIdleTime = configUser.getFloat("idleTime") ?? configDefault.getFloat("idleTime");
+			configTimeCheckInterval = configUser.getFloat("checkInterval") ?? configDefault.getFloat("checkInterval");
+			configMaxLinesToQueue = configUser.getInt("maxQueueEntries") ?? configDefault.getInt("maxQueueEntries");
 		}
 
 		private void start() {
