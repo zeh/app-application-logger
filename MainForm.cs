@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 
@@ -11,7 +12,6 @@ namespace ApplicationLogger {
 	public partial class MainForm : Form {
 
 		// Constants
-		private const string SETTINGS_FIELD_PATH_TEMPLATE = "PathTemplate";
 		private const string SETTINGS_FIELD_RUN_AT_STARTUP = "RunAtStartup";
 		private const string REGISTRY_KEY_ID = "ApplicationLogger";					// Registry app key for when it's running at startup
 		private const string CONFIG_FILE = "ApplicationLogger.cfg";
@@ -35,6 +35,8 @@ namespace ApplicationLogger {
 		private bool isUserIdle;
 		private string lastUserProcessId;
 		private List<string> queuedLogMessages;
+
+		private string configPath;
 
 		private string newUserProcessId;											// Temp
 		private DateTime now;														// Temp, used for getting the time
@@ -71,10 +73,6 @@ namespace ApplicationLogger {
 			notifyIcon.ContextMenu = contextMenu;
 
 			applySettingsRunAtStartup();
-
-			// Initialize UI
-			if (settingsPathTemplate == null || settingsPathTemplate == "") settingsPathTemplate = "logs/[[year]]_[[month]].log";
-			textPathTemplate.Text = settingsPathTemplate;
 
 			// Finally, start
 			start();
@@ -170,11 +168,6 @@ namespace ApplicationLogger {
 			WindowState = FormWindowState.Normal;
 		}
 
-		private void onClickSave(object sender, EventArgs e) {
-			// Save options
-			settingsPathTemplate = textPathTemplate.Text;
-		}
-
 
 		// ================================================================================================================
 		// INTERNAL INTERFACE ---------------------------------------------------------------------------------------------
@@ -244,7 +237,41 @@ namespace ApplicationLogger {
 				configFileData = System.IO.File.ReadAllText(CONFIG_FILE);
 			}
 
+			var configValuesDefault = getConfigValues(configFileDataDefault);
+			var configValues = getConfigValues(configFileData);
+
 			// Interprets config data
+			configPath = getConfigValueAsString(configValues, "path") ?? getConfigValueAsString(configValuesDefault, "path");
+		}
+
+		private Dictionary<String, String> getConfigValues(string fileData) {
+			// Reads a config file into a dictionary
+
+			string[] lines = fileData.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+			int equalPosition;
+			var allValues = new Dictionary<String, String>();
+
+			foreach (var line in lines) {
+				// Skip comments
+				if (line.Trim()[0] == '#') continue;
+
+				// Parse field
+				equalPosition = line.IndexOf("=");
+				if (equalPosition > 0) {
+					allValues.Add(line.Substring(0, equalPosition).Trim(), line.Substring(equalPosition + 1).Trim());
+				}
+			}
+
+			return allValues;
+		}
+
+		private string getConfigValueAsString(Dictionary<String, String> values, string fieldName) {
+			// Gets a value from a dictionary
+			return values.ContainsKey(fieldName) ? values[fieldName] : null;
+		}
+
+		private float getConfigValueAsFloat(Dictionary<String, String> values, string fieldName) {
+			return float.Parse(getConfigValueAsString(values, fieldName), CultureInfo.InvariantCulture);
 		}
 
 		private void start() {
@@ -337,7 +364,7 @@ namespace ApplicationLogger {
 			}
 
 			now = DateTime.Now;
-			string fileName = settingsPathTemplate.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
+			string fileName = configPath.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
 			bool saved = false;
 
 			// Check if the path exists, creating it otherwise
@@ -381,17 +408,6 @@ namespace ApplicationLogger {
 
 		// ================================================================================================================
 		// ACCESSOR INTERFACE ---------------------------------------------------------------------------------------------
-
-		private string settingsPathTemplate {
-			// The template for where log files should be saved
-			get {
-				return (string)Settings.Default[SETTINGS_FIELD_PATH_TEMPLATE];
-			}
-			set {
-				Settings.Default[SETTINGS_FIELD_PATH_TEMPLATE] = value;
-				Settings.Default.Save();
-			}
-		}
 
 		private bool settingsRunAtStartup {
 			// Whether the settings say the app should run at startup or not

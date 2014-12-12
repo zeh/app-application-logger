@@ -12,7 +12,7 @@
 #
 # Examples:
 #   path=appLog.log
-#   path=logs/[[year]]_[[month]].log
+#   path=logs\[[year]]_[[month]].log
 #   path=c:\logs\app\[[year]]\[[month]]\[[day]].log
 #
 path=logs\[[year]]_[[month]].log
