@@ -263,8 +263,8 @@ namespace ApplicationLogger {
 				logLine("app::focus", process.ProcessName, process.MainModule.FileName, process.MainWindowTitle);
 				updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
 			} catch (Exception exception) {
-				logLine("app::focus", process.ProcessName, "?", "?");
-				updateText("Name: ?");
+				logLine("app::focus", process.ProcessName, process.MainModule.FileName, "?");
+				updateText("Name: " + process.ProcessName + ", ?");
 			}
 		}
 
