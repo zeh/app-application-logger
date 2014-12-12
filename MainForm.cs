@@ -16,12 +16,9 @@ namespace ApplicationLogger {
 		private const string REGISTRY_KEY_ID = "ApplicationLogger";					// Registry app key for when it's running at startup
 		private const string CONFIG_FILE = "ApplicationLogger.cfg";
 
-		private const long IDLE_TIME = 10L * 60L * 1000L;							// Time to be considered idle, in ms; 10 minutes
-		private const int TIME_CHECK_INTERVAL = 500;								// Time interval to check processes, in ms
 		private const string LINE_DIVIDER = "\t";
 		private const string LINE_END = "\r\n";
 		private const string DATE_TIME_FORMAT = "o";								// 2008-06-15T21:15:07.0000000
-		private const int MAX_LINES_TO_QUEUE = 20;									// Max lines to queue before writing to file
 
 		// Properties
 		private Timer timerCheck;
@@ -37,6 +34,9 @@ namespace ApplicationLogger {
 		private List<string> queuedLogMessages;
 
 		private string configPath;
+		private float? configIdleTime;												// In seconds
+		private float? configTimeCheckInterval;										// In seconds
+		private int? configMaxLinesToQueue;
 
 		private string newUserProcessId;											// Temp
 		private DateTime now;														// Temp, used for getting the time
@@ -99,7 +99,7 @@ namespace ApplicationLogger {
 			// Timer tick: check for the current application
 
 			// Check the user is idle
-			if (SystemHelper.GetIdleTime() >= IDLE_TIME) {
+			if (SystemHelper.GetIdleTime() >= configIdleTime * 1000f) {
 				if (!isUserIdle) {
 					// User is now idle
 					isUserIdle = true;
@@ -242,6 +242,9 @@ namespace ApplicationLogger {
 
 			// Interprets config data
 			configPath = getConfigValueAsString(configValues, "path") ?? getConfigValueAsString(configValuesDefault, "path");
+			configIdleTime = getConfigValueAsFloat(configValues, "idleTime") ?? getConfigValueAsFloat(configValuesDefault, "idleTime");
+			configTimeCheckInterval = getConfigValueAsFloat(configValues, "checkInterval") ?? getConfigValueAsFloat(configValuesDefault, "checkInterval");
+			configMaxLinesToQueue = getConfigValueAsInt(configValues, "maxQueueEntries") ?? getConfigValueAsInt(configValuesDefault, "maxQueueEntries");
 		}
 
 		private Dictionary<String, String> getConfigValues(string fileData) {
@@ -270,8 +273,12 @@ namespace ApplicationLogger {
 			return values.ContainsKey(fieldName) ? values[fieldName] : null;
 		}
 
-		private float getConfigValueAsFloat(Dictionary<String, String> values, string fieldName) {
+		private float? getConfigValueAsFloat(Dictionary<String, String> values, string fieldName) {
 			return float.Parse(getConfigValueAsString(values, fieldName), CultureInfo.InvariantCulture);
+		}
+
+		private int? getConfigValueAsInt(Dictionary<String, String> values, string fieldName) {
+			return int.Parse(getConfigValueAsString(values, fieldName), CultureInfo.InvariantCulture);
 		}
 
 		private void start() {
@@ -279,7 +286,7 @@ namespace ApplicationLogger {
 				// Initialize timer
 				timerCheck = new Timer();
 				timerCheck.Tick += new EventHandler(onTimer);
-				timerCheck.Interval = TIME_CHECK_INTERVAL;
+				timerCheck.Interval = (int)(configTimeCheckInterval * 1000f);
 				timerCheck.Start();
 
 				lastUserProcessId = null;
@@ -352,7 +359,7 @@ namespace ApplicationLogger {
 
 			//Console.Write("LOG ==> " + lineToLog.ToString());
 
-			if (queuedLogMessages.Count > MAX_LINES_TO_QUEUE) commitLines();
+			if (queuedLogMessages.Count > configMaxLinesToQueue) commitLines();
 		}
 
 		private void commitLines() {
