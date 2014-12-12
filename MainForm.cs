@@ -1,8 +1,8 @@
 ﻿using ApplicationLogger.Properties;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
@@ -12,6 +12,9 @@ namespace ApplicationLogger {
 
 		// Constants
 		private const string SETTINGS_FIELD_PATH_TEMPLATE = "PathTemplate";
+		private const string SETTINGS_FIELD_RUN_AT_STARTUP = "RunAtStartup";
+		private const string REGISTRY_KEY_ID = "ApplicationLogger";					// Registry app key for when it's running at startup
+
 		private const long IDLE_TIME = 10L * 60L * 1000L;							// Time to be considered idle, in ms; 10 minutes
 		private const int TIME_CHECK_INTERVAL = 500;								// Time interval to check processes, in ms
 		private const string LINE_DIVIDER = "\t";
@@ -24,6 +27,7 @@ namespace ApplicationLogger {
 		private ContextMenu contextMenu;
 		private MenuItem menuItemOpen;
 		private MenuItem menuItemStartStop;
+		private MenuItem menuItemRunAtStartup;
 		private MenuItem menuItemExit;
 		private bool isClosing;
 		private bool isStarted;
@@ -62,6 +66,8 @@ namespace ApplicationLogger {
 			notifyIcon.Icon = ApplicationLogger.Properties.Resources.trayIcon;
 			notifyIcon.ContextMenu = contextMenu;
 
+			applySettingsRunAtStartup();
+
 			// Initialize UI
 			if (settingsPathTemplate == null || settingsPathTemplate == "") settingsPathTemplate = "logs/[[year]]_[[month]].log";
 			textPathTemplate.Text = settingsPathTemplate;
@@ -76,10 +82,15 @@ namespace ApplicationLogger {
 				// User initiated, just minimize instead
 				e.Cancel = true;
 				Hide();
-			} else {
-				// Actually closing
-				stop();
 			}
+		}
+
+		private void onFormClosed(object sender, FormClosedEventArgs e) {
+			// Stops everything
+			stop();
+
+			// If debugging, un-hook itself from startup
+			if (System.Diagnostics.Debugger.IsAttached && windowsRunAtStartup) windowsRunAtStartup = false;
 		}
 
 		private void onTimer(object sender, EventArgs e) {
@@ -140,6 +151,12 @@ namespace ApplicationLogger {
 			}
 		}
 
+		private void onMenuItemRunAtStartupClicked(object Sender, EventArgs e) {
+			menuItemRunAtStartup.Checked = !menuItemRunAtStartup.Checked;
+			settingsRunAtStartup = menuItemRunAtStartup.Checked;
+			applySettingsRunAtStartup();
+		}
+
 		private void onMenuItemExitClicked(object Sender, EventArgs e) {
 			exit();
 		}
@@ -167,18 +184,28 @@ namespace ApplicationLogger {
 			menuItemOpen.Index = 0;
 			menuItemOpen.Text = "&Open";
 			menuItemOpen.Click += new EventHandler(onMenuItemOpenClicked);
+			contextMenu.MenuItems.Add(menuItemOpen);
 
 			menuItemStartStop = new MenuItem();
 			menuItemStartStop.Index = 0;
 			menuItemStartStop.Text = "";
 			menuItemStartStop.Click += new EventHandler(onMenuItemStartStopClicked);
+			contextMenu.MenuItems.Add(menuItemStartStop);
+
+			menuItemRunAtStartup = new MenuItem();
+			menuItemRunAtStartup.Index = 0;
+			menuItemRunAtStartup.Text = "Run at Windows startup";
+			menuItemRunAtStartup.Click += new EventHandler(onMenuItemRunAtStartupClicked);
+			menuItemRunAtStartup.Checked = settingsRunAtStartup;
+			contextMenu.MenuItems.Add(menuItemRunAtStartup);
+
+			contextMenu.MenuItems.Add("-");
 
 			menuItemExit = new MenuItem();
 			menuItemExit.Index = 1;
 			menuItemExit.Text = "E&xit";
 			menuItemExit.Click += new EventHandler(onMenuItemExitClicked);
-
-			contextMenu.MenuItems.AddRange(new MenuItem[] {menuItemOpen, menuItemStartStop, menuItemExit});
+			contextMenu.MenuItems.Add(menuItemExit);
 
 			updateContextMenu();
 		}
@@ -300,6 +327,17 @@ namespace ApplicationLogger {
 			labelApplication.Text = text;
 		}
 
+		private void applySettingsRunAtStartup() {
+			// Check whether it's properly set to run at startup or not
+			if (settingsRunAtStartup) {
+				// Should run at startup
+				if (!windowsRunAtStartup) windowsRunAtStartup = true;
+			} else {
+				// Should not run at startup
+				if (windowsRunAtStartup) windowsRunAtStartup = false;
+			}
+		}
+
 		private void exit() {
 			isClosing = true;
 			Close();
@@ -320,10 +358,37 @@ namespace ApplicationLogger {
 			}
 		}
 
+		private bool settingsRunAtStartup {
+			// Whether the settings say the app should run at startup or not
+			get {
+				return (bool)Settings.Default[SETTINGS_FIELD_RUN_AT_STARTUP];
+			}
+			set {
+				Settings.Default[SETTINGS_FIELD_RUN_AT_STARTUP] = value;
+				Settings.Default.Save();
+			}
 		}
 
+		private bool windowsRunAtStartup {
+			// Whether it's actually set to run at startup or not
+			get {
+				return getStartupRegistryKey().GetValue(REGISTRY_KEY_ID) != null;
+			}
+			set {
+				if (value) {
+					// Add
+					getStartupRegistryKey(true).SetValue(REGISTRY_KEY_ID, Application.ExecutablePath.ToString());
+					//Console.WriteLine("RUN AT STARTUP SET AS => TRUE");
+				} else {
+					// Remove
+					getStartupRegistryKey(true).DeleteValue(REGISTRY_KEY_ID, false);
+					//Console.WriteLine("RUN AT STARTUP SET AS => FALSE");
+				}
+			}
 		}
 
+		private RegistryKey getStartupRegistryKey(bool writable = false) {
+			return Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", writable);
 		}
 
 		private Process getCurrentUserProcess() {

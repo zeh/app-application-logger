@@ -101,6 +101,7 @@
 			this.Text = "Application Logger";
 			this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.onFormClosing);
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.onFormClosed);
 			this.Load += new System.EventHandler(this.onFormLoad);
 			this.Resize += new System.EventHandler(this.onResize);
 			this.groupBox1.ResumeLayout(false);
