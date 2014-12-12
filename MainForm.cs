@@ -340,6 +340,12 @@ namespace ApplicationLogger {
 			string fileName = settingsPathTemplate.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
 			bool saved = false;
 
+			// Check if the path exists, creating it otherwise
+			string filePath = System.IO.Path.GetDirectoryName(fileName);
+			if (!System.IO.Directory.Exists(filePath)) {
+				System.IO.Directory.CreateDirectory(filePath);
+			}
+
 			try {
 				System.IO.File.AppendAllText(fileName, lineToLog.ToString());
 				saved = true;
