@@ -29,6 +29,7 @@ The log file contains these fields, separated by a tab:
    * `app::focus`: an application gained focus.
    * `status::idle`: the user is now idle. Time is the time of the last known interaction.
    * `status::stop`: logging has stopped, either because the application has quit, the user has stopped logging, or because the day has ended.
+   * `status::end-of-day`: an app focus event has occurred in a different day and a different log file, so this will be the last event in that specific log file; the app focus event will be added to the next file.
  * Machine name
  * Process name
  * Full process path

@@ -31,6 +31,8 @@ namespace ApplicationLogger {
 		private bool isStarted;
 		private bool isUserIdle;
 		private string lastUserProcessId;
+		private string lastFileNameSaved;
+		private int lastDayLineLogged;
 		private List<string> queuedLogMessages;
 
 		private string configPath;
@@ -39,7 +41,6 @@ namespace ApplicationLogger {
 		private int? configMaxLinesToQueue;
 
 		private string newUserProcessId;											// Temp
-		private DateTime now;														// Temp, used for getting the time
 		private StringBuilder lineToLog;											// Temp, used to create the line
 
 		// ================================================================================================================
@@ -61,6 +62,7 @@ namespace ApplicationLogger {
 			isStarted = false;
 			queuedLogMessages = new List<string>();
 			lineToLog = new StringBuilder();
+			lastFileNameSaved = "";
 
 			// Read configuration
 			readConfiguration();
@@ -278,34 +280,57 @@ namespace ApplicationLogger {
 
 		private void logUserIdle() {
 			// Log that the user is idle
-			logLine("status::idle");
+			logLine("status::idle", true, false, configIdleTime ?? 0);
 			updateText("User idle");
-
-			commitLines();
-		}
-
-		private void logUserProcess(Process process) {
-			// Log the current user process
-			try {
-				logLine("app::focus", process.ProcessName, process.MainModule.FileName, process.MainWindowTitle);
-				updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
-			} catch (Exception exception) {
-				logLine("app::focus", process.ProcessName, process.MainModule.FileName, "?");
-				updateText("Name: " + process.ProcessName + ", ?");
-			}
+			newUserProcessId = null;
 		}
 
 		private void logStop() {
 			// Log stopping the application
-			logLine("status::stop");
+			logLine("status::stop", true);
 			updateText("Stopped");
-
-			commitLines();
+			newUserProcessId = null;
 		}
 
-		private void logLine(string type, string title = "", string location = "", string subject = "") {
+		private void logEndOfDay() {
+			// Log an app focus change after the end of the day, and at the end of the specific log file
+			logLine("status::end-of-day", true, true);
+			newUserProcessId = null;
+		}
+
+		private void logUserProcess(Process process) {
+			// Log the current user process
+
+			int dayOfLog = DateTime.Now.Day;
+
+			if (dayOfLog != lastDayLineLogged) {
+				// The last line was logged on a different day, so check if it should be a new file
+				string newFileName = getLogFileName();
+
+				if (newFileName != lastFileNameSaved && lastFileNameSaved != "") {
+					// It's a new file: commit current with an end-of-day event
+					logEndOfDay();
+				}
+			}
+
+			try {
+				logLine("app::focus", process.ProcessName, process.MainModule.FileName, process.MainWindowTitle);
+				updateText("Name: " + process.ProcessName + ", " + process.MainWindowTitle);
+			} catch (Exception exception) {
+				logLine("app::focus", process.ProcessName, "?", "?");
+				updateText("Name: " + process.ProcessName + ", ?");
+			}
+		}
+
+		private void logLine(string type, bool forceCommit = false, bool usePreviousDayFileName = false, float idleTimeOffsetSeconds = 0) {
+			logLine(type, "", "", "", forceCommit, usePreviousDayFileName, idleTimeOffsetSeconds);
+		}
+
+		private void logLine(string type, string title, string location, string subject, bool forceCommit = false, bool usePreviousDayFileName = false, float idleTimeOffsetSeconds = 0) {
 			// Log a single line
-			now = DateTime.Now;
+			DateTime now = DateTime.Now;
+
+			now.AddSeconds(idleTimeOffsetSeconds);
 			
 			lineToLog.Clear();
 			lineToLog.Append(now.ToString(DATE_TIME_FORMAT));
@@ -321,33 +346,42 @@ namespace ApplicationLogger {
 			lineToLog.Append(subject);
 			lineToLog.Append(LINE_END);
 
-			queuedLogMessages.Add(lineToLog.ToString());
-
 			//Console.Write("LOG ==> " + lineToLog.ToString());
 
-			if (queuedLogMessages.Count > configMaxLinesToQueue) commitLines();
+			queuedLogMessages.Add(lineToLog.ToString());
+			lastDayLineLogged = DateTime.Now.Day;
+
+			if (queuedLogMessages.Count > configMaxLinesToQueue || forceCommit) {
+				if (usePreviousDayFileName) {
+					commitLines(lastFileNameSaved);
+				} else {
+					commitLines();
+				}
+			}
 		}
 
-		private void commitLines() {
+		private void commitLines(string fileName = null) {
 			// Commit all currently queued lines to the file
+
+			// If no commit needed, just return
+			if (queuedLogMessages.Count == 0) return;
 
 			lineToLog.Clear();
 			foreach (var line in queuedLogMessages) {
 				lineToLog.Append(line);
 			}
 
-			now = DateTime.Now;
-			string fileName = configPath.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
+			string commitFileName = fileName ?? getLogFileName();
 			bool saved = false;
 
 			// Check if the path exists, creating it otherwise
-			string filePath = System.IO.Path.GetDirectoryName(fileName);
+			string filePath = System.IO.Path.GetDirectoryName(commitFileName);
 			if (!System.IO.Directory.Exists(filePath)) {
 				System.IO.Directory.CreateDirectory(filePath);
 			}
 
 			try {
-				System.IO.File.AppendAllText(fileName, lineToLog.ToString());
+				System.IO.File.AppendAllText(commitFileName, lineToLog.ToString());
 				saved = true;
 			} catch (Exception exception) {
 			}
@@ -427,6 +461,12 @@ namespace ApplicationLogger {
 
 			// Nothing found!
 			return null;
+		}
+
+		private string getLogFileName() {
+			// Get the log filename for something to be logged now
+			var now = DateTime.Now;
+			return configPath.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
 		}
 	}
 }
