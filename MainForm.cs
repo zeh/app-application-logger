@@ -64,6 +64,9 @@ namespace ApplicationLogger {
 			lineToLog = new StringBuilder();
 			lastFileNameSaved = "";
 
+			// Force working folder
+			System.IO.Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
 			// Read configuration
 			readConfiguration();
 
@@ -446,7 +449,7 @@ namespace ApplicationLogger {
 		}
 
 		private RegistryKey getStartupRegistryKey(bool writable = false) {
-			return Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", writable);
+			return Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", writable);
 		}
 
 		private Process getCurrentUserProcess() {
