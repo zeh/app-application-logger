@@ -11,6 +11,15 @@ namespace ApplicationLogger {
 
 	public partial class MainForm : Form {
 
+		/*
+		 * TODO:
+		 * . Count lines in UI?
+		 * . Change icon when stopped
+		 * . Commit after some time (maxQueueTime in config)
+		 * . Allow opening current log file in context menu
+		 * . Create analyzer
+		 */ 
+
 		// Constants
 		private const string SETTINGS_FIELD_RUN_AT_STARTUP = "RunAtStartup";
 		private const string REGISTRY_KEY_ID = "ApplicationLogger";					// Registry app key for when it's running at startup

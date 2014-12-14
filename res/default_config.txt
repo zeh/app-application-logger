@@ -1,3 +1,16 @@
+######################################################################################################
+#
+# CONFIGURATIONS FOR APPLICATION LOGGER
+#
+# This file contains several configurations used by Application Logger. You can change them at will.
+# They will not become active until Application Logger is restarted, however.
+#
+# If this file is deleted, it will be rewritten with the default values.
+#
+# All fields follow, with a description of what each of them does.
+#
+######################################################################################################
+
 # Template for the file path in which logs will be saved.
 #
 # * This is either relative to the executable path, or an absolute path.
@@ -43,6 +56,7 @@ maxQueueEntries=20
 # Examples:
 #   maxQueueTime=300
 #
-maxQueueTime=300
+#maxQueueTime=300
+#TODO
 
 # ignorePrivateWindows=true # http://stackoverflow.com/questions/14132142/using-c-sharp-to-close-google-chrome-incognito-windows-only
