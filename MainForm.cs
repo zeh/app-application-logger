@@ -36,9 +36,9 @@ namespace ApplicationLogger {
 		private MenuItem menuItemStartStop;
 		private MenuItem menuItemRunAtStartup;
 		private MenuItem menuItemExit;
-		private bool isClosing;
+		private bool allowClose;
 		private bool allowShow;
-		private bool isStarted;
+		private bool isRunning;
 		private bool isUserIdle;
 		private string lastUserProcessId;
 		private string lastFileNameSaved;
@@ -68,8 +68,8 @@ namespace ApplicationLogger {
 			// Just loaded everything
 
 			// Initialize
-			isClosing = false;
-			isStarted = false;
+			allowClose = false;
+			isRunning = false;
 			queuedLogMessages = new List<string>();
 			lineToLog = new StringBuilder();
 			lastFileNameSaved = "";
@@ -98,7 +98,7 @@ namespace ApplicationLogger {
 
 		private void onFormClosing(object sender, FormClosingEventArgs e) {
 			// Form is attempting to close
-			if (!isClosing) {
+			if (!allowClose) {
 				// User initiated, just minimize instead
 				e.Cancel = true;
 				Hide();
@@ -163,7 +163,7 @@ namespace ApplicationLogger {
 		}
 
 		private void onMenuItemStartStopClicked(object Sender, EventArgs e) {
-			if (isStarted) {
+			if (isRunning) {
 				stop();
 			} else {
 				start();
@@ -225,7 +225,7 @@ namespace ApplicationLogger {
 
 		private void updateContextMenu() {
 			if (menuItemStartStop != null) {
-				if (isStarted) {
+				if (isRunning) {
 					menuItemStartStop.Text = "&Stop";
 				} else {
 					menuItemStartStop.Text = "&Start";
@@ -262,7 +262,7 @@ namespace ApplicationLogger {
 		}
 
 		private void start() {
-			if (!isStarted) {
+			if (!isRunning) {
 				// Initialize timer
 				timerCheck = new Timer();
 				timerCheck.Tick += new EventHandler(onTimer);
@@ -270,21 +270,21 @@ namespace ApplicationLogger {
 				timerCheck.Start();
 
 				lastUserProcessId = null;
-				isStarted = true;
+				isRunning = true;
 
 				updateContextMenu();
 			}
 		}
 
 		private void stop() {
-			if (isStarted) {
+			if (isRunning) {
 				logStop();
 
 				timerCheck.Stop();
 				timerCheck.Dispose();
 				timerCheck = null;
 
-				isStarted = false;
+				isRunning = false;
 
 				updateContextMenu();
 			}
@@ -426,7 +426,7 @@ namespace ApplicationLogger {
 		}
 
 		private void exit() {
-			isClosing = true;
+			allowClose = true;
 			Close();
 		}
 
