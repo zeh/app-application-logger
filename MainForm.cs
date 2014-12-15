@@ -40,6 +40,7 @@ namespace ApplicationLogger {
 		private bool allowShow;
 		private bool isRunning;
 		private bool isUserIdle;
+		private bool hasInitialized;
 		private string lastUserProcessId;
 		private string lastFileNameSaved;
 		private int lastDayLineLogged;
@@ -58,6 +59,7 @@ namespace ApplicationLogger {
 
 		public MainForm() {
 			InitializeComponent();
+			initializeForm();
 		}
 
 
@@ -65,35 +67,16 @@ namespace ApplicationLogger {
 		// EVENT INTERFACE ------------------------------------------------------------------------------------------------
 
 		private void onFormLoad(object sender, EventArgs e) {
-			// Just loaded everything
+			// First time the form is shown
+		}
 
-			// Initialize
-			allowClose = false;
-			isRunning = false;
-			queuedLogMessages = new List<string>();
-			lineToLog = new StringBuilder();
-			lastFileNameSaved = "";
-			allowShow = false;
-
-			// Force working folder
-			System.IO.Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-
-			// Read configuration
-			readConfiguration();
-
-			// Create context menu for the tray icon and update it
-			createContextMenu();
-
-			// Update tray
-			updateTrayIcon();
-
-			// Check if it needs to run at startup
-			applySettingsRunAtStartup();
-
-			// Finally, start
-			start();
-
-			Hide();
+		protected override void SetVisibleCore(bool isVisible) {
+			if (!allowShow) {
+				// Initialization form show, when it's ran: doesn't allow showing form
+				isVisible = false;
+				if (!this.IsHandleCreated) CreateHandle();
+			}
+			base.SetVisibleCore(isVisible);
 		}
 
 		private void onFormClosing(object sender, FormClosingEventArgs e) {
@@ -187,6 +170,39 @@ namespace ApplicationLogger {
 
 		// ================================================================================================================
 		// INTERNAL INTERFACE ---------------------------------------------------------------------------------------------
+
+		private void initializeForm() {
+			// Initialize
+
+			if (!hasInitialized) {
+				allowClose = false;
+				isRunning = false;
+				queuedLogMessages = new List<string>();
+				lineToLog = new StringBuilder();
+				lastFileNameSaved = "";
+				allowShow = false;
+
+				// Force working folder
+				System.IO.Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
+				// Read configuration
+				readConfiguration();
+
+				// Create context menu for the tray icon and update it
+				createContextMenu();
+
+				// Update tray
+				updateTrayIcon();
+
+				// Check if it needs to run at startup
+				applySettingsRunAtStartup();
+
+				// Finally, start
+				start();
+
+				hasInitialized = true;
+			}
+		}
 
 		private void createContextMenu() {
 			// Initialize context menu
