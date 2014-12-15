@@ -64,7 +64,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>res\tray.ico</ApplicationIcon>
+    <ApplicationIcon>res\iconNormal.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -138,6 +138,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\default_config.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\iconNormal.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\iconStopped.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="iconNormal.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

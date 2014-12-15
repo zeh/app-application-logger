@@ -61,21 +61,18 @@ namespace ApplicationLogger.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to # Template for the file path in which logs will be saved.
+        ///   Looks up a localized string similar to ######################################################################################################
         ///#
-        ///# * This is either relative to the executable path, or an absolute path.
+        ///# CONFIGURATIONS FOR APPLICATION LOGGER
         ///#
-        ///# * If the file or path doesn&apos;t exist, it will be created.
+        ///# This file contains several configurations used by Application Logger. You can change them at will.
+        ///# They will not become active until Application Logger is restarted, however.
         ///#
-        ///# * Some variables are accepted, and replace the file where convenient:
+        ///# If this file is deleted, it will be rewritten with the default values.
         ///#
-        ///#   [[year]] : current year e.g: 2014
-        ///#   [[month]] : current month of the year (starting at 1), e.g: 03, 12
-        ///#   [[day]] : current day of the month (starting at 1), e.g: 01, 28
+        ///# All fields follow, with a description of what each of them does.
         ///#
-        ///# Examples:
-        ///#   path=appLog.log
-        ///#   path=logs/[[y [rest of string was truncated]&quot;;.
+        ///############################# [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string default_config {
             get {
@@ -86,9 +83,19 @@ namespace ApplicationLogger.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon trayIcon {
+        internal static System.Drawing.Icon iconNormal {
             get {
-                object obj = ResourceManager.GetObject("trayIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("iconNormal", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon iconStopped {
+            get {
+                object obj = ResourceManager.GetObject("iconStopped", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

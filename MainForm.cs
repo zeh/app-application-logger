@@ -14,9 +14,9 @@ namespace ApplicationLogger {
 		/*
 		 * TODO:
 		 * . Count lines in UI?
-		 * . Change icon when stopped
 		 * . Commit after some time (maxQueueTime in config)
 		 * . Allow opening current log file in context menu
+		 * . Allow app change ignoring on regex?
 		 * . Create analyzer
 		 */ 
 
@@ -81,13 +81,13 @@ namespace ApplicationLogger {
 			// Read configuration
 			readConfiguration();
 
-			// Create context menu for the tray icon
+			// Create context menu for the tray icon and update it
 			createContextMenu();
 
-			// Initialize notification icon
-			notifyIcon.Icon = ApplicationLogger.Properties.Resources.trayIcon;
-			notifyIcon.ContextMenu = contextMenu;
+			// Update tray
+			updateTrayIcon();
 
+			// Check if it needs to run at startup
 			applySettingsRunAtStartup();
 
 			// Finally, start
@@ -220,6 +220,8 @@ namespace ApplicationLogger {
 			menuItemExit.Click += new EventHandler(onMenuItemExitClicked);
 			contextMenu.MenuItems.Add(menuItemExit);
 
+			notifyIcon.ContextMenu = contextMenu;
+
 			updateContextMenu();
 		}
 
@@ -230,6 +232,16 @@ namespace ApplicationLogger {
 				} else {
 					menuItemStartStop.Text = "&Start";
 				}
+			}
+		}
+
+		private void updateTrayIcon() {
+			if (isRunning) {
+				notifyIcon.Icon = ApplicationLogger.Properties.Resources.iconNormal;
+				notifyIcon.Text = "Application Logger (started)";
+			} else {
+				notifyIcon.Icon = ApplicationLogger.Properties.Resources.iconStopped;
+				notifyIcon.Text = "Application Logger (stopped)";
 			}
 		}
 
@@ -273,6 +285,7 @@ namespace ApplicationLogger {
 				isRunning = true;
 
 				updateContextMenu();
+				updateTrayIcon();
 			}
 		}
 
@@ -287,6 +300,7 @@ namespace ApplicationLogger {
 				isRunning = false;
 
 				updateContextMenu();
+				updateTrayIcon();
 			}
 		}
 
