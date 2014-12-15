@@ -14,7 +14,6 @@ namespace ApplicationLogger {
 		/*
 		 * TODO:
 		 * . Count lines in UI?
-		 * . Commit after some time (maxQueueTime in config)
 		 * . Allow opening current log file in context menu
 		 * . Allow app change ignoring on regex?
 		 * . Create analyzer
@@ -44,12 +43,14 @@ namespace ApplicationLogger {
 		private string lastUserProcessId;
 		private string lastFileNameSaved;
 		private int lastDayLineLogged;
+		private DateTime lastTimeQueueWritten;
 		private List<string> queuedLogMessages;
 
 		private string configPath;
 		private float? configIdleTime;												// In seconds
 		private float? configTimeCheckInterval;										// In seconds
-		private int? configMaxLinesToQueue;
+		private float? configMaxQueueTime;
+		private int? configMaxQueueEntries;
 
 		private string newUserProcessId;											// Temp
 		private StringBuilder lineToLog;											// Temp, used to create the line
@@ -127,6 +128,11 @@ namespace ApplicationLogger {
 						lastUserProcessId = newUserProcessId;
 					}
 				}
+			}
+
+			// Write to log if enough time passed
+			if (queuedLogMessages.Count > 0 || (DateTime.Now - lastTimeQueueWritten).TotalSeconds > configMaxQueueTime ) {
+				commitLines();
 			}
 		}
 
@@ -286,7 +292,8 @@ namespace ApplicationLogger {
 			configPath = configUser.getString("path") ?? configDefault.getString("path");
 			configIdleTime = configUser.getFloat("idleTime") ?? configDefault.getFloat("idleTime");
 			configTimeCheckInterval = configUser.getFloat("checkInterval") ?? configDefault.getFloat("checkInterval");
-			configMaxLinesToQueue = configUser.getInt("maxQueueEntries") ?? configDefault.getInt("maxQueueEntries");
+			configMaxQueueEntries = configUser.getInt("maxQueueEntries") ?? configDefault.getInt("maxQueueEntries");
+			configMaxQueueTime = configUser.getFloat("maxQueueTime") ?? configDefault.getFloat("maxQueueTime");
 		}
 
 		private void start() {
@@ -298,6 +305,7 @@ namespace ApplicationLogger {
 				timerCheck.Start();
 
 				lastUserProcessId = null;
+				lastTimeQueueWritten = DateTime.Now;
 				isRunning = true;
 
 				updateContextMenu();
@@ -393,7 +401,7 @@ namespace ApplicationLogger {
 			queuedLogMessages.Add(lineToLog.ToString());
 			lastDayLineLogged = DateTime.Now.Day;
 
-			if (queuedLogMessages.Count > configMaxLinesToQueue || forceCommit) {
+			if (queuedLogMessages.Count > configMaxQueueEntries || forceCommit) {
 				if (usePreviousDayFileName) {
 					commitLines(lastFileNameSaved);
 				} else {
@@ -431,6 +439,8 @@ namespace ApplicationLogger {
 			if (saved) {
 				// Saved successfully, now clear the queue
 				queuedLogMessages.Clear();
+
+				lastTimeQueueWritten = DateTime.Now;
 			}
 		}
 
