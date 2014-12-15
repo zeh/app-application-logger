@@ -131,7 +131,7 @@ namespace ApplicationLogger {
 			}
 
 			// Write to log if enough time passed
-			if (queuedLogMessages.Count > 0 || (DateTime.Now - lastTimeQueueWritten).TotalSeconds > configMaxQueueTime ) {
+			if (queuedLogMessages.Count > 0 && (DateTime.Now - lastTimeQueueWritten).TotalSeconds > configMaxQueueTime ) {
 				commitLines();
 			}
 		}
