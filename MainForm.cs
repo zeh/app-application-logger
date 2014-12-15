@@ -37,6 +37,7 @@ namespace ApplicationLogger {
 		private MenuItem menuItemRunAtStartup;
 		private MenuItem menuItemExit;
 		private bool isClosing;
+		private bool allowShow;
 		private bool isStarted;
 		private bool isUserIdle;
 		private string lastUserProcessId;
@@ -72,6 +73,7 @@ namespace ApplicationLogger {
 			queuedLogMessages = new List<string>();
 			lineToLog = new StringBuilder();
 			lastFileNameSaved = "";
+			allowShow = false;
 
 			// Force working folder
 			System.IO.Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
@@ -157,8 +159,7 @@ namespace ApplicationLogger {
 		}
 
 		private void onMenuItemOpenClicked(object Sender, EventArgs e) {
-			Show();
-			WindowState = FormWindowState.Normal;
+			showForm();
 		}
 
 		private void onMenuItemStartStopClicked(object Sender, EventArgs e) {
@@ -180,8 +181,7 @@ namespace ApplicationLogger {
 		}
 
 		private void onDoubleClickNotificationIcon(object sender, MouseEventArgs e) {
-			Show();
-			WindowState = FormWindowState.Normal;
+			showForm();
 		}
 
 
@@ -417,6 +417,12 @@ namespace ApplicationLogger {
 				// Should not run at startup
 				if (windowsRunAtStartup) windowsRunAtStartup = false;
 			}
+		}
+
+		private void showForm() {
+			allowShow = true;
+			Show();
+			WindowState = FormWindowState.Normal;
 		}
 
 		private void exit() {
