@@ -36,10 +36,10 @@ class ConfigParser {
 	}
 
 	public float? getFloat(string fieldName) {
-		return float.Parse(getString(fieldName), CultureInfo.InvariantCulture);
+		return values.ContainsKey(fieldName) ? float.Parse(getString(fieldName), CultureInfo.InvariantCulture) : (float?)null;
 	}
 
 	public int? getInt(string fieldName) {
-		return int.Parse(getString(fieldName), CultureInfo.InvariantCulture);
+		return values.ContainsKey(fieldName) ? int.Parse(getString(fieldName), CultureInfo.InvariantCulture) : (int?)null;
 	}
 }
