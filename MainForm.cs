@@ -524,7 +524,23 @@ namespace ApplicationLogger {
 		private string getLogFileName() {
 			// Get the log filename for something to be logged now
 			var now = DateTime.Now;
-			return configPath.Replace("[[month]]", now.ToString("MM")).Replace("[[day]]", now.ToString("dd")).Replace("[[year]]", now.ToString("yyyy"));
+			var filename = configPath;
+
+			// Replaces variables
+			filename = filename.Replace("[[month]]", now.ToString("MM"));
+			filename = filename.Replace("[[day]]", now.ToString("dd"));
+			filename = filename.Replace("[[year]]", now.ToString("yyyy"));
+			filename = filename.Replace("[[machine]]", Environment.MachineName);
+
+			var pathOnly = System.IO.Path.GetDirectoryName(filename);
+			var fileOnly = System.IO.Path.GetFileName(filename);
+
+			// Make it safe
+			foreach (char c in System.IO.Path.GetInvalidFileNameChars()) {
+				fileOnly = fileOnly.Replace(c, '_');
+			}
+
+			return (pathOnly.Length > 0 ? pathOnly + "\\" : "") + fileOnly;
 		}
 	}
 }

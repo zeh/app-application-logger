@@ -22,13 +22,14 @@
 #   [[year]] : current year e.g: 2014
 #   [[month]] : current month of the year (starting at 1), e.g: 03, 12
 #   [[day]] : current day of the month (starting at 1), e.g: 01, 28
+#   [[machine]] : current machine name (useful when saving logs to a network drive or shared space of some kind, like dropbox)
 #
 # Examples:
 #   path=appLog.log
 #   path=logs\[[year]]_[[month]].log
 #   path=c:\logs\app\[[year]]\[[month]]\[[day]].log
 #
-path=logs\[[year]]_[[month]].log
+path=logs\[[year]]_[[month]]_[[machine]].log
 
 # The time, in seconds, that the computer has to be idle for the user to be considered away.
 #
