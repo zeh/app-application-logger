@@ -426,7 +426,7 @@ namespace ApplicationLogger {
 
 			// Check if the path exists, creating it otherwise
 			string filePath = System.IO.Path.GetDirectoryName(commitFileName);
-			if (!System.IO.Directory.Exists(filePath)) {
+			if (filePath.Length > 0 && !System.IO.Directory.Exists(filePath)) {
 				System.IO.Directory.CreateDirectory(filePath);
 			}
 
