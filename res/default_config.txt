@@ -61,4 +61,3 @@ maxQueueEntries=1000
 #
 maxQueueTime=300
 
-# ignorePrivateWindows=true # http://stackoverflow.com/questions/14132142/using-c-sharp-to-close-google-chrome-incognito-windows-only

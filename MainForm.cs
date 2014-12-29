@@ -17,6 +17,7 @@ namespace ApplicationLogger {
 		 * . Allow opening current log file in context menu
 		 * . Allow app change ignoring on regex?
 		 * . Create analyzer
+		 * . ignore private windows? http://stackoverflow.com/questions/14132142/using-c-sharp-to-close-google-chrome-incognito-windows-only
 		 */ 
 
 		// Constants
