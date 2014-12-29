@@ -33,6 +33,7 @@ namespace ApplicationLogger {
 		private Timer timerCheck;
 		private ContextMenu contextMenu;
 		private MenuItem menuItemOpen;
+		private MenuItem menuItemOpenLog;
 		private MenuItem menuItemStartStop;
 		private MenuItem menuItemRunAtStartup;
 		private MenuItem menuItemExit;
@@ -160,6 +161,11 @@ namespace ApplicationLogger {
 			}
 		}
 
+		private void onMenuItemOpenLogClicked(object Sender, EventArgs e) {
+			commitLines();
+			Process.Start(getLogFileName());
+		}
+
 		private void onMenuItemRunAtStartupClicked(object Sender, EventArgs e) {
 			menuItemRunAtStartup.Checked = !menuItemRunAtStartup.Checked;
 			settingsRunAtStartup = menuItemRunAtStartup.Checked;
@@ -224,9 +230,19 @@ namespace ApplicationLogger {
 
 			menuItemStartStop = new MenuItem();
 			menuItemStartStop.Index = 0;
-			menuItemStartStop.Text = "";
+			menuItemStartStop.Text = ""; // Set later
 			menuItemStartStop.Click += new EventHandler(onMenuItemStartStopClicked);
 			contextMenu.MenuItems.Add(menuItemStartStop);
+
+			contextMenu.MenuItems.Add("-");
+
+			menuItemOpenLog = new MenuItem();
+			menuItemOpenLog.Index = 0;
+			menuItemOpenLog.Text = ""; // Set later
+			menuItemOpenLog.Click += new EventHandler(onMenuItemOpenLogClicked);
+			contextMenu.MenuItems.Add(menuItemOpenLog);
+
+			contextMenu.MenuItems.Add("-");
 
 			menuItemRunAtStartup = new MenuItem();
 			menuItemRunAtStartup.Index = 0;
@@ -249,11 +265,26 @@ namespace ApplicationLogger {
 		}
 
 		private void updateContextMenu() {
+			// Update start/stop command
 			if (menuItemStartStop != null) {
 				if (isRunning) {
 					menuItemStartStop.Text = "&Stop";
 				} else {
 					menuItemStartStop.Text = "&Start";
+				}
+			}
+
+			// Update filename
+			if (menuItemOpenLog != null) {
+				var filename = getLogFileName();
+				if (!System.IO.File.Exists(filename)) {
+					// Doesn't exist
+					menuItemOpenLog.Text = "Open &log file";
+					menuItemOpenLog.Enabled = false;
+				} else {
+					// Exists
+					menuItemOpenLog.Text = "Open &log file (" + filename + ")";
+					menuItemOpenLog.Enabled = true;
 				}
 			}
 		}
@@ -442,6 +473,8 @@ namespace ApplicationLogger {
 				queuedLogMessages.Clear();
 
 				lastTimeQueueWritten = DateTime.Now;
+
+				updateContextMenu();
 			}
 		}
 
