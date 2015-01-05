@@ -1,0 +1,304 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Application Logger Analyzer</title>
+	<meta charset="utf-8">
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #ffffff;
+			overflow: hidden;
+			font-family: sans-serif;
+		}
+		#logOutput {
+			padding: 10px;
+			border: 1px solid #dddddd;
+		}
+	</style>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script>
+	
+		var entries = [];			// {duration, machine, id, dir, title}
+		var filteredEntries = [];	// Same
+		var filesToBeParsed = 0;	// Files that need to be loaded
+
+		function onLoaded() {
+			if (window.File && window.FileReader && window.FileList && window.Blob) {
+				// Normal
+				document.getElementById('fileSelectField').addEventListener('change', onFileSelected, false);
+			} else {
+				// Files not supported
+				console.error("Local file system not supported");
+			}
+		}
+
+		function onFileSelected(e) {
+			// Files have been selected, handle them
+			// http://www.html5rocks.com/en/tutorials/file/dndfiles/
+			var files = e.target.files; // FileList object with File objects
+
+			// List file properties
+			var i, f;
+			for (i = 0; f = files[i]; i++) {
+				log('<strong>' + escape(f.name) + '</strong> (' + (f.type || 'n/a') + ') - ' + f.size + ' bytes, last modified: ' + (f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a'));
+			}
+			
+			// Handle file data
+			clearEntries();
+			filesToBeParsed = files.length;
+			for (i = 0; f = files[i]; i++) {
+				parseFileEntries(files[i]);
+			}
+		}
+		
+		function clearEntries() {
+			entries = [];
+		}
+		
+		function parseFileEntries(file) {
+			// Handle the contents of a File
+			
+			var reader = new FileReader();
+
+			// Capture the file information
+			reader.onload = function(e) {
+				parseStringEntries(e.target.result);
+			};
+
+			// Read in the image file as a data URL.
+			reader.readAsText(file);
+		}
+		
+		function parseStringEntries(contents) {
+			// Handles the contents of a string, one line at a time
+			
+			var lines = contents.replace("\r\n", "\n").split("\n");
+			log("Parsing " + lines.length + " lines...");
+			
+			var newTime;
+			var entryTime, entryType, entryMachine, entryId, entryDir, entryTitle;
+			var ti = new Date().getTime();
+
+			// Parses all app lines; last line is always ignored
+			for (var i = 0; i < lines.length; i++) {
+				if (lines[i].length > 0) {
+					line = lines[i].split("\t");
+					
+					newTime = new Date(line[0]);
+					
+					if (entryType == "app::focus") {
+						// Had an entry before, record it
+						addEntryLine(
+							entries,
+							(newTime.getTime() - entryTime.getTime()) / 1000,
+							entryMachine,
+							entryId,
+							entryDir,
+							entryTitle
+						);
+					}
+
+					// Read current as new entry
+					entryTime = newTime;
+					entryType = line[1];
+					entryMachine = line[2];
+					entryId = line[3];
+					entryDir = line[4];
+					entryTitle = line[5];
+				}
+			}
+			
+			log("Done in " + ((new Date().getTime() - ti)/1000) + "s");
+			log("Unique app entries in list: " + entries.length);
+			
+			ti = new Date().getTime();
+			
+			log("Grouping...");
+			
+			// Creates chart - HACK!
+			filterEntries();
+			
+			log("Done in " + ((new Date().getTime() - ti)/1000) + "s");
+			log("Unique entries in filtered list: " + filteredEntries.length);
+			
+			filesToBeParsed--;
+
+			checkIfChartCanBeCreated();
+		}
+		
+		function checkIfChartCanBeCreated() {
+			// Check if all files are loaded, and if so, create chart
+			
+			if (filesToBeParsed == 0) {
+				log("All files loaded and parsed.");
+				createChart(filteredEntries);
+			}
+		}
+		
+		function addEntryLine(entryList, duration, machine, id, dir, title) {
+			// Add one new entry, adding duration up with the machine/id/dir/title are the same, for speed later
+			
+			// Search to see if the entry exist
+			// This will be exponentially slow!
+
+			var existsIndex = -1;
+			for (var i = 0; i < entryList.length; i++) {
+				if (entryList[i].machine == machine && entryList[i].id == id && entryList[i].dir == dir && entryList[i].title == title) {
+					existsIndex = i;
+					break;
+				}
+			}
+			
+			if (existsIndex > -1) {
+				// Already exist, just add up
+				entryList[existsIndex].duration += duration;
+			} else {
+				// Doesn't exist, add new
+				entryList.push({
+					duration: duration,
+					machine: machine,
+					id: id,
+					dir: dir,
+					title: title
+				});
+			}
+			
+			// TODO: filter if/dir/title/etc if different, set to "various?"
+
+		}
+		
+		function log(message) {
+			document.getElementById('logOutput').innerHTML += message + '<br>';
+		}
+		
+		function filterEntries() {
+			// Creates a new list of entries, grouped
+			var groups = []; // {groupId, machine, id, dir, title}; if all match, the groupId is used instead
+			groups = [
+				{ groupId: "Unity/C#",				machine: "", id: "",			dir: 'devenv\.exe',			title: "UnityVS" },
+				{ groupId: "Unity/C#",				machine: "", id: "",			dir: 'Unity\.exe',			title: "" },
+				{ groupId: "Unity/C#",				machine: "", id: "",			dir: 'MonoDevelop\.exe',	title: "MonoDevelop-Unity" },
+				{ groupId: "Unity/C#",				machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.cs ' },
+				{ groupId: "Windows/C#",			machine: "", id: "",			dir: 'devenv\.exe', 		title: "ApplicationLogger" },
+				{ groupId: "Windows/C#",			machine: "", id: "",			dir: 'WDExpress\.exe',		title: "ApplicationLogger" },
+				{ groupId: "Android/Java",			machine: "", id: "",			dir: 'studio64\.exe',		title: "" },
+				{ groupId: "Flash/ActionScript",	machine: "", id: "",			dir: 'FDT\.exe',			title: "" },
+				{ groupId: "Flash/ActionScript",	machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.as ' },
+				{ groupId: "Flash/ActionScript",	machine: "", id: "",			dir: 'java\.exe',	title: 'External SWF Viewer' },
+				{ groupId: "HTML/JavaScript",		machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.js ' },
+				{ groupId: "HTML/JavaScript",		machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.html ' },
+				{ groupId: "HTML/JavaScript",		machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.css ' },
+				{ groupId: "Notepad++ (configs)",	machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.json ' },
+				{ groupId: "Notepad++ (configs)",	machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.xml ' },
+				{ groupId: "Notepad++ (configs)",	machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.cfg ' },
+				//{ groupId: "NP AS",				machine: "", id: "",			dir: 'notepad\\+\\+\.exe',	title: '\.log ' },
+				
+				{ groupId: "Other",					machine: "", id: "",			dir: "",					title: "", hide: true}
+			];
+			
+			filteredEntries = [];
+			
+			var matched = 0;
+			var unmatched = 0;
+			
+			for (var i = 0; i < entries.length; i++) {
+				// Check if this entry matches any group filter
+				var added = false;
+				for (var j = 0; j < groups.length; j++) {
+					if (
+						(groups[j].machine == "" || new RegExp(groups[j].machine).test(entries[i].machine)) &&
+						(groups[j].id == "" || new RegExp(groups[j].id).test(entries[i].id)) &&
+						(groups[j].dir == "" || new RegExp(groups[j].dir).test(entries[i].dir)) &&
+						(groups[j].title == "" || new RegExp(groups[j].title).test(entries[i].title))
+					) {
+						// Matched, adds it
+						if (groups[j].groupId != undefined && !groups[j].hide) addEntryLine(filteredEntries, entries[i].duration, "?", groups[j].groupId, "?", "?");
+						matched++;
+						added = true;
+						break;
+					}
+				}
+				
+				if (!added) {
+					// Not matched, add it as a unique entry
+					addEntryLine(filteredEntries, entries[i].duration, entries[i].machine, entries[i].id, entries[i].dir, entries[i].title);
+					unmatched++;
+				}
+			}
+			
+			log("Matched = " + matched + ", unmatched = " + unmatched);
+
+			//filteredEntries = entries;
+		}
+		
+		function createChart(chartEntries) {
+			// http://bl.ocks.org/mbostock/3887235
+
+			// Sort entries by duration
+			var sortedEntries = [];
+			var i;
+
+			for (var i = 0; i < chartEntries.length; i++) {
+				for (var j = 0; j < sortedEntries.length; j++) {
+					if (chartEntries[i].duration > sortedEntries[j].duration) break;
+				}
+				sortedEntries.splice(j, 0, chartEntries[i]);
+			}
+			// Use the 10 most popular ones
+			var data = [];
+			log("------ name\tminutes");
+			for (i = 0; i < 10 && i < sortedEntries.length; i++) {
+				data.push({time:sortedEntries[i].duration / 60, name:sortedEntries[i].id + " (" + Math.floor(sortedEntries[i].duration / 60) + "m)"});
+				//log(i + " => dur = " + sortedEntries[i].duration + ", name = " + sortedEntries[i].id);
+				
+				log("------ " + data[i].name + "\t" + data[i].time);
+			}
+			
+			var width = 960,
+				height = 500,
+				radius = Math.min(width, height) / 2;
+				
+			var color = d3.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+			
+			var arc = d3.svg.arc()
+				.outerRadius(radius - 10)
+				.innerRadius(0);
+
+			var pie = d3.layout.pie()
+				.sort(null)
+				.value(function(d) { return d.time; });
+
+			var svg = d3.select("body").append("svg")
+				.attr("width", width)
+				.attr("height", height)
+				.append("g")
+				.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+				
+			var g = svg.selectAll(".arc")
+				.data(pie(data))
+				.enter().append("g")
+				.attr("class", "arc");
+
+			g.append("path")
+				.attr("d", arc)
+				.style("fill", function(d) { return color(d.data.name); });
+
+			g.append("text")
+				.attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+				.attr("dy", ".35em")
+				.style("text-anchor", "middle")
+				.text(function(d) { return d.data.name; });
+
+			log("Chart created.");
+		}
+		
+		onload = onLoaded;
+
+	</script>
+</head>
+<body>
+<input type="file" id="fileSelectField" name="files[]" multiple />
+<div id="logOutput"></div>
+</body>
+</html>
