@@ -52,4 +52,4 @@ Other info
 
 The project is a Visual Studio 2013 project. It's a single form project, so it should be fairly simple to change, customize and recompile.
 
-This project is licensed under the [WTFPL](http://en.wikipedia.org/wiki/WTFPL) license.
+The application is freeware. The source code is licensed under the [MIT](LICENSE.MD) license.
