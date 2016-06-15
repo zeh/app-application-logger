@@ -11,15 +11,6 @@ namespace ApplicationLogger {
 
 	public partial class MainForm : Form {
 
-		/*
-		 * TODO:
-		 * . Count lines in UI?
-		 * . Allow opening current log file in context menu
-		 * . Allow app change ignoring on regex?
-		 * . Create analyzer
-		 * . ignore private windows? http://stackoverflow.com/questions/14132142/using-c-sharp-to-close-google-chrome-incognito-windows-only
-		 */ 
-
 		// Constants
 		private const string SETTINGS_FIELD_RUN_AT_STARTUP = "RunAtStartup";
 		private const string REGISTRY_KEY_ID = "ApplicationLogger";					// Registry app key for when it's running at startup
@@ -413,7 +404,7 @@ namespace ApplicationLogger {
 			DateTime now = DateTime.Now;
 
 			now.AddSeconds(idleTimeOffsetSeconds);
-			
+
 			lineToLog.Clear();
 			lineToLog.Append(now.ToString(DATE_TIME_FORMAT));
 			lineToLog.Append(LINE_DIVIDER);

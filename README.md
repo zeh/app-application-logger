@@ -47,6 +47,19 @@ These are some examples of log lines:
 	2014-12-11T12:24:14.1160028-05:00	status::idle			
 	2014-12-11T13:49:01.4716875-05:00	status::stop			
 
+
+TODO
+----
+
+ * Maybe create a parser (pre-visualizer) with better internal architecture. Recognize applications, and from there parse "language", "project name", etc. Like what WakaTime does.
+ * Finish visualizer UI. Use [other JS library](http://www.jsgraphs.com/) for better charts.
+ * Better UI for the app window
+ * Allow opening current log dir in context menu
+ * Create analyzer
+ * ignore private windows? http://stackoverflow.com/questions/14132142/using-c-sharp-to-close-google-chrome-incognito-windows-only
+ * log URLs in case of browsers? http://stackoverflow.com/questions/18897070/getting-the-current-tabs-url-from-google-chrome-using-c-sharp, http://stackoverflow.com/questions/5317642/retrieve-current-url-from-c-sharp-windows-forms-application
+
+
 Other info
 ----------
 
