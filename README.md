@@ -3,7 +3,7 @@ Application Logger
 
 Application Logger is a small standalone Windows application that logs the applications the current user is running at any time, adding them to a log file every time the user changes focus.
 
-I created this because I wanted to have a log of all the applications I've been using, and what file they had open, for statistical purposes. While there are some applications and online services that already do this for you (e.g. RescueTime), no other service had the level of flexibility and raw access to data I wanted so I decided to write this myself.
+I created this because I wanted to have a log of all the applications I've been using, and what file they had open, for statistical purposes. While there are some applications and online services that already do this for you (e.g. RescueTime, WakaTime), no other service had the level of flexibility and raw access to data I wanted so I decided to write this myself.
 
 The result is an application that writes data to a raw, tab-separated log file.
 
@@ -44,8 +44,8 @@ These are some examples of log lines:
 	2014-12-11T13:37:15.4130887-05:00	app::focus	ZMACHINE	explorer	C:\Windows\explorer.exe	src
 	2014-12-11T11:37:23.3319560-05:00	app::focus	ZMACHINE	WDExpress	C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\WDExpress.exe	ApplicationLogger - Microsoft Visual Studio Express 2013 for Windows Desktop (Administrator)
 	2014-12-11T13:44:53.9509379-05:00	app::focus	ZMACHINE	studio64	C:\Users\zeh.fernando\AppData\Local\Android\android-studio-0.8.14\bin\studio64.exe	android - [D:\work\QWERTY_APPS2852\dev\android-app] - [app] - ...\app\src\main\java\com\querty\obfuscated\ApplicationConstants.java - Android Studio 1.0
-	2014-12-11T12:24:14.1160028-05:00	status::idle			
-	2014-12-11T13:49:01.4716875-05:00	status::stop			
+	2014-12-11T12:24:14.1160028-05:00	status::idle
+	2014-12-11T13:49:01.4716875-05:00	status::stop
 
 
 TODO
