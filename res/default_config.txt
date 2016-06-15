@@ -42,11 +42,11 @@ idleTime=600
 #
 # Examples:
 #   checkInterval=0.5
+#   checkInterval=1
 #
-checkInterval=0.5
+checkInterval=1
 
 # The maximum number of log entries that can be queued at any time before they are committed to the log file.
-#
 # Generally this should be a very high number, since it's more predictable to let it save to the file based on time (maxQueueTime) instead.
 #
 # Examples:
@@ -55,6 +55,7 @@ checkInterval=0.5
 maxQueueEntries=1000
 
 # The maximum amount of time that can pass, in seconds, before the current log entries (if any) are committed to the log file.
+# This is done so we avoid writing to the disk too frequently.
 #
 # Examples:
 #   maxQueueTime=300
